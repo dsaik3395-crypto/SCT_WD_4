@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A modern, professional To-Do web app built with HTML, CSS, and Vanilla JavaScript." />
+  <title>TaskFlow — To-Do App</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✅</text></svg>" />
+</head>
+<body>
+
+  <!-- ░░░ HEADER ░░░ -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">⚡</span>
+        <h1 class="brand-name">TaskFlow</h1>
+      </div>
+      <div class="header-meta">
+        <div class="clock" id="clock" aria-live="off" aria-atomic="true"></div>
+        <div class="task-stats">
+          <span class="stat-badge" id="statActive" title="Active tasks">0 active</span>
+          <span class="stat-badge stat-badge--done" id="statDone" title="Completed tasks">0 done</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ░░░ MAIN LAYOUT ░░░ -->
+  <main class="app-main">
+
+    <!-- SIDEBAR / CATEGORY PANEL -->
+    <aside class="sidebar" aria-label="Categories">
+      <h2 class="sidebar-title">Categories</h2>
+      <ul class="category-list" role="list" id="categoryList">
+        <li>
+          <button class="category-btn active" data-category="all" aria-pressed="true">
+            <span class="cat-icon">📋</span>
+            <span class="cat-label">All Tasks</span>
+            <span class="cat-count" id="catCount-all">0</span>
+          </button>
+        </li>
+        <li>
+          <button class="category-btn" data-category="work" aria-pressed="false">
+            <span class="cat-icon">💼</span>
+            <span class="cat-label">Work</span>
+            <span class="cat-count" id="catCount-work">0</span>
+          </button>
+        </li>
+        <li>
+          <button class="category-btn" data-category="personal" aria-pressed="false">
+            <span class="cat-icon">🏠</span>
+            <span class="cat-label">Personal</span>
+            <span class="cat-count" id="catCount-personal">0</span>
+          </button>
+        </li>
+        <li>
+          <button class="category-btn" data-category="shopping" aria-pressed="false">
+            <span class="cat-icon">🛒</span>
+            <span class="cat-label">Shopping</span>
+            <span class="cat-count" id="catCount-shopping">0</span>
+          </button>
+        </li>
+        <li>
+          <button class="category-btn" data-category="health" aria-pressed="false">
+            <span class="cat-icon">❤️</span>
+            <span class="cat-label">Health</span>
+            <span class="cat-count" id="catCount-health">0</span>
+          </button>
+        </li>
+        <li>
+          <button class="category-btn" data-category="other" aria-pressed="false">
+            <span class="cat-icon">🌟</span>
+            <span class="cat-label">Other</span>
+            <span class="cat-count" id="catCount-other">0</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <button class="btn btn--danger btn--sm" id="clearCompletedBtn" title="Remove all completed tasks">
+          🗑️ Clear Completed
+        </button>
+      </div>
+    </aside>
+
+    <!-- CONTENT AREA -->
+    <section class="content" aria-label="Task list">
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input
+            type="search"
+            id="searchInput"
+            class="search-input"
+            placeholder="Search tasks…"
+            aria-label="Search tasks"
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- FILTER TABS -->
+        <nav class="filter-tabs" role="tablist" aria-label="Task filters">
+          <button class="filter-tab active" role="tab" data-filter="all" aria-selected="true">All</button>
+          <button class="filter-tab" role="tab" data-filter="active" aria-selected="false">Active</button>
+          <button class="filter-tab" role="tab" data-filter="completed" aria-selected="false">Completed</button>
+          <button class="filter-tab filter-tab--overdue" role="tab" data-filter="overdue" aria-selected="false">⚠️ Overdue</button>
+        </nav>
+
+        <!-- SORT -->
+        <div class="sort-wrap">
+          <label for="sortSelect" class="sr-only">Sort tasks</label>
+          <select id="sortSelect" class="sort-select" aria-label="Sort tasks">
+            <option value="created-desc">Newest first</option>
+            <option value="created-asc">Oldest first</option>
+            <option value="due-asc">Due date ↑</option>
+            <option value="due-desc">Due date ↓</option>
+            <option value="priority">Priority</option>
+            <option value="alpha">A → Z</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- MOBILE CATEGORY CHIPS -->
+      <div class="category-chips" aria-label="Category filter chips">
+        <button class="chip active" data-category="all">All</button>
+        <button class="chip" data-category="work">💼 Work</button>
+        <button class="chip" data-category="personal">🏠 Personal</button>
+        <button class="chip" data-category="shopping">🛒 Shopping</button>
+        <button class="chip" data-category="health">❤️ Health</button>
+        <button class="chip" data-category="other">🌟 Other</button>
+      </div>
+
+      <!-- TASK LIST -->
+      <ul class="task-list" id="taskList" role="list" aria-live="polite" aria-label="Tasks"></ul>
+
+      <!-- EMPTY STATE -->
+      <div class="empty-state" id="emptyState" hidden aria-hidden="true">
+        <div class="empty-illustration" aria-hidden="true">✨</div>
+        <h3 class="empty-title">No tasks here!</h3>
+        <p class="empty-sub" id="emptyMessage">Add your first task to get started.</p>
+        <button class="btn btn--primary" onclick="openAddModal()">+ Add Task</button>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ░░░ FAB — ADD TASK ░░░ -->
+  <button class="fab" id="fabBtn" aria-label="Add new task" title="Add new task">
+    <span aria-hidden="true">+</span>
+  </button>
+
+  <!-- ░░░ ADD / EDIT DIALOG ░░░ -->
+  <dialog class="modal" id="taskModal" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <header class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Add Task</h2>
+        <button class="modal-close" id="modalCloseBtn" aria-label="Close dialog">✕</button>
+      </header>
+
+      <form id="taskForm" class="task-form" novalidate>
+        <input type="hidden" id="editTaskId" />
+
+        <div class="form-group">
+          <label for="taskTitle" class="form-label">Task Title <span class="required" aria-hidden="true">*</span></label>
+          <input
+            type="text"
+            id="taskTitle"
+            class="form-input"
+            placeholder="What needs to be done?"
+            required
+            maxlength="150"
+            autocomplete="off"
+          />
+          <span class="form-error" id="titleError" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="taskNote" class="form-label">Notes <span class="optional">(optional)</span></label>
+          <textarea
+            id="taskNote"
+            class="form-input form-textarea"
+            placeholder="Add extra details…"
+            rows="2"
+            maxlength="300"
+          ></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="taskCategory" class="form-label">Category</label>
+            <select id="taskCategory" class="form-input form-select">
+              <option value="work">💼 Work</option>
+              <option value="personal">🏠 Personal</option>
+              <option value="shopping">🛒 Shopping</option>
+              <option value="health">❤️ Health</option>
+              <option value="other" selected>🌟 Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="taskPriority" class="form-label">Priority</label>
+            <select id="taskPriority" class="form-input form-select">
+              <option value="high">🔴 High</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="taskDue" class="form-label">Due Date &amp; Time</label>
+          <input
+            type="datetime-local"
+            id="taskDue"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn--ghost" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn btn--primary" id="submitBtn">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ░░░ DELETE CONFIRM DIALOG ░░░ -->
+  <dialog class="modal modal--confirm" id="deleteModal" aria-labelledby="deleteTitle">
+    <div class="modal-card">
+      <div class="confirm-icon" aria-hidden="true">🗑️</div>
+      <h2 class="modal-title" id="deleteTitle">Delete Task?</h2>
+      <p class="confirm-text">This action cannot be undone.</p>
+      <div class="form-actions">
+        <button class="btn btn--ghost" id="cancelDeleteBtn">Cancel</button>
+        <button class="btn btn--danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ░░░ TOAST NOTIFICATION ░░░ -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
